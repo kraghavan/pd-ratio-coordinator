@@ -30,3 +30,9 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+bin/
+*.test
+*.out
+vendor/
+.DS_Store
+cover.out

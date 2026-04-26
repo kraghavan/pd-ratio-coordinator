@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pd-ratio-coordinator-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pd-ratio-coordinator-manager-role
+rules:
+  - apiGroups: ["llmd.io"]
+    resources: ["pdratiopolicies"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["llmd.io"]
+    resources: ["pdratiopolicies/status"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments/scale"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pd-ratio-coordinator-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pd-ratio-coordinator-manager-role
+subjects:
+  - kind: ServiceAccount
+    name: pd-ratio-coordinator-controller-manager
+    namespace: pd-ratio-coordinator-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pd-ratio-coordinator-controller-manager
+  namespace: pd-ratio-coordinator-system

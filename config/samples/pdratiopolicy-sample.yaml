@@ -1,0 +1,57 @@
+apiVersion: llmd.io/v1alpha1
+kind: PDRatioPolicy
+metadata:
+  name: qwen-scaler
+  namespace: llm-d
+spec:
+  # Total GPUs available across both pools.
+  # prefill.replicas + decode.replicas must not exceed this.
+  gpuBudget: 8
+
+  # Kubernetes namespace where prefill/decode Deployments live.
+  namespace: llm-d
+
+  prefill:
+    # Name of the llm-d prefill Deployment
+    deployment: ms-pd-llm-d-modelservice-prefill
+    min: 1
+    max: 8
+
+    # Scale up when requests waiting exceeds this
+    queueDepthTrigger: 5
+
+    # Scale up when queue grows by this many within velocityWindowSeconds
+    # (catches spikes before the queue saturates — the WVA blind spot)
+    queueVelocityTrigger: 3
+
+    # Observation window for spike detection
+    velocityWindowSeconds: 30
+
+  decode:
+    # Name of the llm-d decode Deployment
+    deployment: ms-pd-llm-d-modelservice-decode
+    min: 1
+    max: 4
+
+    # Scale up when TPOT p95 exceeds this SLO (milliseconds)
+    tpotSLOMs: 80
+
+    # Scale up when KV cache utilization exceeds this (prevent OOM)
+    kvCacheThreshold: "0.85"
+
+  # Minimum seconds between consecutive scale actions
+  # Prevents oscillation from rapid metric fluctuations
+  cooldownSeconds: 120
+
+  # Seconds to wait for in-flight decode requests to complete
+  # before terminating a pod during scale-down
+  drainTimeoutSeconds: 30
+
+  # Prometheus URL (standard kube-prometheus-stack service name)
+  prometheusURL: http://kube-prometheus-stack-prometheus.llm-d-monitoring:9090
+
+  # Optional: automatic PD_PROMPT_LEN_THRESHOLD adjustment
+  # based on observed input sequence length distribution
+  dynamicThreshold:
+    enabled: false
+    pdPromptLenThreshold: 1000
