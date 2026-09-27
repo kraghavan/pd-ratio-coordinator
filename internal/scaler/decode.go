@@ -3,6 +3,8 @@ package scaler
 import (
 	"fmt"
 	"strconv"
+
+	v1alpha1 "github.com/kraghavan/pd-ratio-coordinator/api/v1alpha1"
 )
 
 // DecodeDecision is the output of the decode bottleneck analysis.
@@ -97,12 +99,12 @@ func ComputeScaleDecision(
 	desired := ScaleDecision{
 		DesiredPrefill: currentPrefill,
 		DesiredDecode:  currentDecode,
-		Bottleneck:     BottleneckNone,
+		Bottleneck:     v1alpha1.BottleneckNone,
 	}
 
 	switch {
 	case prefill.UnderPressure && !decode.UnderPressure:
-		desired.Bottleneck = BottleneckPrefill
+		desired.Bottleneck = v1alpha1.BottleneckPrefill
 		desired.Reason = prefill.Reason
 		if desired.DesiredPrefill < maxPrefill &&
 			desired.DesiredPrefill+desired.DesiredDecode < gpuBudget {
@@ -110,7 +112,7 @@ func ComputeScaleDecision(
 		}
 
 	case decode.UnderPressure && !prefill.UnderPressure:
-		desired.Bottleneck = BottleneckDecode
+		desired.Bottleneck = v1alpha1.BottleneckDecode
 		desired.Reason = decode.Reason
 		if desired.DesiredDecode < maxDecode &&
 			desired.DesiredPrefill+desired.DesiredDecode < gpuBudget {
@@ -118,7 +120,7 @@ func ComputeScaleDecision(
 		}
 
 	case prefill.UnderPressure && decode.UnderPressure:
-		desired.Bottleneck = BottleneckBoth
+		desired.Bottleneck = v1alpha1.BottleneckBoth
 		desired.Reason = fmt.Sprintf("prefill:%s decode:%s", prefill.Reason, decode.Reason)
 		// Prioritise decode — TPOT is more user-visible than TTFT
 		if desired.DesiredDecode < maxDecode &&
@@ -130,7 +132,7 @@ func ComputeScaleDecision(
 		}
 
 	default:
-		desired.Bottleneck = BottleneckNone
+		desired.Bottleneck = v1alpha1.BottleneckNone
 		desired.Reason = "none"
 		// No pressure — enforce budget if over it (shouldn't happen, defensive)
 	}

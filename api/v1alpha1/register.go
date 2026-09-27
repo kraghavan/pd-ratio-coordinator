@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
@@ -72,8 +73,7 @@ func (in *PDRatioPolicyStatus) DeepCopyInto(out *PDRatioPolicyStatus) {
 		out.LastScaleTime = &t
 	}
 	if in.Conditions != nil {
-		conds := make([]interface{}, len(in.Conditions))
-		_ = conds
-		out.Conditions = append([]interface{}{}, in.Conditions...)
+		out.Conditions = make([]metav1.Condition, len(in.Conditions))
+		copy(out.Conditions, in.Conditions)
 	}
 }
