@@ -1,3 +1,5 @@
+// Package v1alpha1 contains the pd-ratio-coordinator API types.
+// +groupName=llmd.io
 package v1alpha1
 
 import (
@@ -21,6 +23,15 @@ var (
 func init() {
 	SchemeBuilder.Register(&PDRatioPolicy{}, &PDRatioPolicyList{})
 }
+
+// DeepCopy methods below are hand-written, not controller-gen generated.
+// controller-gen v0.16.5's `object` generator produced an incomplete file
+// for this package (DeepCopy/DeepCopyObject only, no DeepCopyInto for the
+// root types at all — a real tool quirk hit while working on this, not
+// worth debugging further right now). The `crd` generator worked fine
+// independently; only `object` had the problem. Kept hand-written, with
+// the earlier DeepCopyInto bug (appending []interface{} into a
+// []metav1.Condition field) already fixed below.
 
 // DeepCopyObject implements runtime.Object.
 func (in *PDRatioPolicy) DeepCopyObject() runtime.Object {

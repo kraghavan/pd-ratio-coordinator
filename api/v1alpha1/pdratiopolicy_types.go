@@ -1,4 +1,3 @@
-// Package v1alpha1 contains API types for the pd-ratio-coordinator.
 package v1alpha1
 
 import (
