@@ -78,15 +78,23 @@ func (c *Client) queryPool(ctx context.Context, podSelector string, isPrefill bo
 	}
 
 	// KV cache utilization
+	// Metric name verified against a real v0.30.0 server (2026-10-01):
+	// vllm:gpu_cache_usage_perc was renamed to vllm:kv_cache_usage_perc.
+	// Same rename already documented as a gotcha in Part 2 of the blog
+	// series, on a different vLLM version -- this has been drifting for a
+	// while, not a one-off.
 	m.KVCacheUsagePct, err = c.scalar(ctx,
-		fmt.Sprintf(`avg(vllm:gpu_cache_usage_perc{%s})`, podSelector))
+		fmt.Sprintf(`avg(vllm:kv_cache_usage_perc{%s})`, podSelector))
 	if err != nil {
 		return nil, fmt.Errorf("kv cache: %w", err)
 	}
 
 	// TPOT p95 (decode signal)
+	// Metric name verified against a real v0.30.0 server (2026-10-01):
+	// vllm:time_per_output_token_seconds was renamed to
+	// vllm:request_time_per_output_token_seconds.
 	m.TPOT_P95Ms, err = c.scalar(ctx, fmt.Sprintf(
-		`histogram_quantile(0.95, sum(rate(vllm:time_per_output_token_seconds_bucket{%s}[2m])) by (le)) * 1000`,
+		`histogram_quantile(0.95, sum(rate(vllm:request_time_per_output_token_seconds_bucket{%s}[2m])) by (le)) * 1000`,
 		podSelector))
 	if err != nil {
 		return nil, fmt.Errorf("tpot p95: %w", err)
